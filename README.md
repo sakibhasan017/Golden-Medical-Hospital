@@ -32,15 +32,11 @@ ICT 8, Department of Information and Communication Engineering, Bangladesh Unive
 
     ```bash
     # Install frontend dependencies
-
-cd frontend
-npm install
-
-# Install backend dependencies
-
-cd ../backend
-npm install
-
+    cd frontend
+    npm install
+    # Install backend dependencies
+    cd ../backend
+    npm install
     ```
 4\. Setup environment:
 --------------------
