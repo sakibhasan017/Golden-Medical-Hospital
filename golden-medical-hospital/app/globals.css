@@ -1,0 +1,37 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --font-merriweather: "Merriweather", serif;
+  --color-deep-navy: #03045e;
+  --color-ocean-blue: #023e8a;
+  --color-sky-blue: #0077b6;
+  --color-azure-blue: #0096c7;
+  --color-seafoam-blue: #00b4d8;
+  --color-light-blue: #48cae4;
+  --color-soft-blue: #90e0ef;
+  --color-pale-blue: #ade8f4;
+  --color-ice-blue: #caf0f8;
+
+  --color-bg: var(--color-ice-blue);
+  --color-darkColor: var(--color-deep-navy);
+  --color-lightColor: var(--color-soft-blue);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-merriweather);
+    background-color: var(--color-bg);
+    color: var(--color-darkColor);
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.font-merriweather {
+  font-family: var(--font-merriweather);
+}
