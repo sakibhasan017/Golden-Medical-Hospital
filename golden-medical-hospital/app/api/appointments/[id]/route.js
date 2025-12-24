@@ -1,10 +1,10 @@
-
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Appointment from "@/models/appointment";
 import mongoose from "mongoose";
+import { sendConfirmMail } from "@/lib/mail";
 
 export async function GET(request, { params }) {
   try {
@@ -24,8 +24,20 @@ export async function GET(request, { params }) {
     if (session.user.role !== "admin" && session.user.role !== "doctor") {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
-    if (session.user.role === "doctor" && session.user.id !== appointment.doctorId.toString()) {
-      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+
+    if (session.user.role === "doctor") {
+      const docIdStr = appointment.doctorId?.toString?.() ?? null;
+      const userId = session.user?.id ?? session.user?._id ?? null;
+      const userEmail = session.user?.email ?? null;
+      if (docIdStr && userId && docIdStr === String(userId)) {
+        // ok
+      } else {
+        const pop = await Appointment.findById(id).populate("doctorId").lean();
+        const doctorEmail = pop?.doctorId?.email ?? null;
+        if (!doctorEmail || !userEmail || doctorEmail !== userEmail) {
+          return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+        }
+      }
     }
 
     return NextResponse.json({ ...appointment, id: appointment._id.toString() }, { status: 200 });
@@ -60,17 +72,53 @@ export async function PATCH(request, { params }) {
     if (session.user.role !== "admin" && session.user.role !== "doctor") {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
-    if (session.user.role === "doctor" && session.user.id !== appointment.doctorId.toString()) {
-      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+
+    if (session.user.role === "doctor") {
+      const docIdStr = appointment.doctorId?.toString?.() ?? null;
+      const userId = session.user?.id ?? session.user?._id ?? null;
+      const userEmail = session.user?.email ?? null;
+      if (docIdStr && userId && docIdStr === String(userId)) {
+        
+      } else {
+        await appointment.populate("doctorId");
+        const doctorEmail = appointment.doctorId?.email ?? null;
+        if (!doctorEmail || !userEmail || doctorEmail !== userEmail) {
+          return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+        }
+      }
     }
+
+    const prevStatus = appointment.status;
 
     if (body.status) appointment.status = body.status;
     if (body.additionalInfo !== undefined) appointment.additionalInfo = body.additionalInfo;
-    
+    if (body.preferredDate !== undefined && body.preferredDate !== null && body.preferredDate !== "") {
+      appointment.preferredDate = new Date(body.preferredDate);
+    }
+    if (body.preferredTime !== undefined) appointment.preferredTime = body.preferredTime;
 
     await appointment.save();
+    //console.log(appointment.status, prevStatus);
+    if (prevStatus !== "Confirmed" && appointment.status === "Confirmed") {
+      try {
+        await appointment.populate("doctorId");
+        const doctor = appointment.doctorId;
+        const doctorName = appointment.doctorName || doctor?.name || doctor?.fullName || "Doctor";
+        await sendConfirmMail({
+          to: appointment.email,
+          patientName: appointment.name,
+          doctorName,
+          date: appointment.preferredDate,
+          time: appointment.preferredTime,
+        });
+      } catch (mailErr) {
+        console.error("Failed sending confirmation mail", mailErr);
+      }
+    }
 
-    return NextResponse.json({ message: "Updated", appointment }, { status: 200 });
+    const apptObj = appointment.toObject();
+    apptObj.id = appointment._id.toString();
+    return NextResponse.json({ message: "Updated", appointment: apptObj }, { status: 200 });
   } catch (err) {
     console.error("PATCH /api/appointments/[id] error", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });

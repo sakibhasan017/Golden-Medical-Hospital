@@ -78,7 +78,7 @@ export default function DoctorUpcoming() {
                     {a.status}
                   </span>
 
-                  <Link href={`/dashboard/doctor/appointments/${a.id}`} className="px-3 py-1 bg-[#0077B6] text-white rounded-md">View</Link>
+                  <Link href={`/dashboard/doctor/upcoming/view/${a.id}`} className="px-3 py-1 bg-[#0077B6] text-white rounded-md">View</Link>
                 </div>
               </div>
             ))}

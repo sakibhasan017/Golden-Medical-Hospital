@@ -15,14 +15,14 @@ const features = [
     title: 'Patient List',
     desc: 'Access your patient records and medical details.',
     icon: <FaUsers size={40} />,
-    href: '#',
+    href: '/dashboard/doctor/patients',
   },
   {
     id: 3,
     title: 'Write Prescription',
     desc: 'Create and update digital prescriptions for patients.',
     icon: <FaFileMedical size={40} />,
-    href: '#',
+    href: '/dashboard/doctor/prescriptions',
   },
   {
     id: 4,
