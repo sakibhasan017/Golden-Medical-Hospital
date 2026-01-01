@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect } from "react";
 import AnesthesiaIcon from "../Icons/Anesthesia";
 import CancerCareIcon from "../Icons/CancerCareIcon";
 import CardiologyCareIcon from "../Icons/CardiologyCareIcon";
@@ -24,9 +26,13 @@ const iconMapping = {
   "Kidney Transplant Program": KidneyTransplantIcon,
 };
 
-async function getSpecialists() {
+export default function Specialities() {
+  const [specialists, setSpecialists] = React.useState([]);
+  
+  useEffect(() => {
+    async function getSpecialists() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/specialists`, {
+    const res = await fetch(`/api/specialists`, {
       cache: 'no-store'
     });
     
@@ -36,15 +42,15 @@ async function getSpecialists() {
     }
     
     const specialists = await res.json();
-    return Array.isArray(specialists) ? specialists : [];
+    setSpecialists(Array.isArray(specialists) ? specialists : []);
   } catch (error) {
     console.error("Error fetching specialists:", error);
-    return [];
+    setSpecialists([]);
   }
 }
+    getSpecialists();
 
-export default async function Specialities() {
-  const specialists = await getSpecialists();
+  }, []);
 
   
   const displaySpecialists = specialists.length > 0 ? specialists : [

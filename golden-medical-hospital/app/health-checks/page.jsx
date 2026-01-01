@@ -1,28 +1,79 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Package, DollarSign, Stethoscope } from "lucide-react";
+import { Package, Stethoscope } from "lucide-react";
 
-async function getHealthchecks() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/health-check`, {
-      cache: "no-store",
-    });
+export default function HealthchecksPage() {
+  const [healthchecks, setHealthchecks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    if (!res.ok) {
-      console.error("Failed to fetch healthcheck packages");
-      return [];
+  useEffect(() => {
+    async function getHealthchecks() {
+      try {
+        const res = await fetch(`/api/health-check`, {
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          console.error("Failed to fetch healthcheck packages");
+          return [];
+        }
+
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error("Error fetching healthcheck packages:", error);
+        return [];
+      }
     }
 
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error("Error fetching healthcheck packages:", error);
-    return [];
-  }
-}
+    async function fetchData() {
+      setLoading(true);
+      const data = await getHealthchecks();
+      setHealthchecks(data);
+      setLoading(false);
+    }
 
-export default async function HealthchecksPage() {
-  const healthchecks = await getHealthchecks();
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-[#F0F9FF] to-[#E6F4FF]">
+        <div className="bg-linear-to-r from-[#0077B6] to-[#00B4D8] text-white">
+          <div className="max-w-6xl mx-auto px-4 py-16 md:py-24">
+            <div className="text-center">
+              <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Package className="w-10 h-10 text-white" />
+              </div>
+              <div className="h-12 bg-white/30 rounded-xl w-2/3 mx-auto mb-4 animate-pulse"></div>
+              <div className="h-6 bg-white/30 rounded-xl w-3/4 mx-auto animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+          <div className="text-center mb-12">
+            <div className="h-8 bg-gray-300 rounded w-1/3 mx-auto mb-4 animate-pulse"></div>
+            <div className="h-4 bg-gray-300 rounded w-1/2 mx-auto animate-pulse"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse"
+              >
+                <div className="h-6 bg-gray-300 rounded mb-4"></div>
+                <div className="h-4 bg-gray-300 rounded w-1/3 mb-6"></div>
+                <div className="h-16 bg-gray-300 rounded mb-6"></div>
+                <div className="h-10 bg-gray-300 rounded"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-linear-to-b from-[#F0F9FF] to-[#E6F4FF]">
@@ -62,9 +113,9 @@ export default async function HealthchecksPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {healthchecks.map((healthcheck) => {
                 // Extract short description (first 100 characters)
-                const shortDescription = healthcheck.description.length > 100 
+                const shortDescription = healthcheck.description && healthcheck.description.length > 100 
                   ? `${healthcheck.description.substring(0, 100)}...` 
-                  : healthcheck.description;
+                  : healthcheck.description || "No description available";
 
                 return (
                   <div
@@ -82,7 +133,7 @@ export default async function HealthchecksPage() {
                             <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
                               <span className="flex items-center gap-1">
                                 <Stethoscope size={12} />
-                                {healthcheck.tests.length} tests
+                                {healthcheck.tests?.length || 0} tests
                               </span>
                             </span>
                           </div>
@@ -96,7 +147,7 @@ export default async function HealthchecksPage() {
                       <div className="mb-6">
                         <div className="text-sm text-gray-500 mb-1">Starting from</div>
                         <div className="text-2xl font-bold text-[#0077B6]">
-                          ৳{healthcheck.price}
+                          ৳{healthcheck.price || "N/A"}
                         </div>
                       </div>
 

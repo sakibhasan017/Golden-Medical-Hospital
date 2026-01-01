@@ -1,49 +1,77 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Package, DollarSign, CheckCircle, ArrowLeft, Phone } from "lucide-react";
+import { Package, DollarSign, CheckCircle, ArrowLeft, Phone, Loader2 } from "lucide-react";
 
-async function getHealthcheck(id) {
-  try {
-    const res = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
-      }/api/health-check/${id}`,
-      {
-        cache: "no-store",
-      }
-    );
+export default function HealthcheckDetailsPage({ params }) {
+  const [healthcheck, setHealthcheck] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [healthcheckId, setHealthcheckId] = useState(null);
 
-    if (!res.ok) {
-      if (res.status === 404) {
-        return null;
+  useEffect(() => {
+    async function getParams() {
+      if (params && typeof params.then === "function") {
+        return await params;
       }
-      throw new Error("Failed to fetch healthcheck package");
+      return params;
     }
 
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching healthcheck package:", error);
-    return null;
-  }
-}
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const resolvedParams = await getParams();
+        const id = resolvedParams?.id;
+        
+        if (!id) {
+          throw new Error("Invalid package ID");
+        }
+        
+        setHealthcheckId(id);
 
-export default async function HealthcheckDetailsPage({ params }) {
-  if (params && typeof params.then === "function") {
-    params = await params;
-  }
+        const res = await fetch(`/api/health-check/${id}`);
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.message || `Failed to fetch package (${res.status})`);
+        }
 
-  const healthcheck = await getHealthcheck(params.id);
+        const data = await res.json();
+        setHealthcheck(data);
+      } catch (error) {
+        console.error("Error fetching healthcheck package:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  if (!healthcheck) {
+    fetchData();
+  }, [params]);
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-linear-to-b from-[#F0F9FF] to-[#E6F4FF] flex items-center justify-center">
         <div className="text-center">
+          <Loader2 className="w-16 h-16 text-[#0077B6] animate-spin mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-[#023E8A] mb-2">Loading Package...</h1>
+          <p className="text-gray-600">Please wait while we fetch the details</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !healthcheck) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-[#F0F9FF] to-[#E6F4FF] flex items-center justify-center">
+        <div className="text-center max-w-md">
           <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-[#023E8A] mb-4">
             Package Not Found
           </h1>
           <p className="text-gray-600 mb-6">
-            The healthcheck package you are looking for does not exist.
+            {error || "The healthcheck package you are looking for does not exist."}
           </p>
           <Link
             href="/health-checks"
@@ -62,10 +90,10 @@ export default async function HealthcheckDetailsPage({ params }) {
       {/* Hero Section */}
       <div className="bg-linear-to-r from-[#0077B6] to-[#00B4D8] text-white">
         <div className="max-w-6xl mx-auto px-4 py-16 md:py-24">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-8">
+            <div className="flex-1">
               <Link
-                href="/healthchecks"
+                href="/health-checks"
                 className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors duration-300"
               >
                 <ArrowLeft size={20} />
@@ -93,12 +121,12 @@ export default async function HealthcheckDetailsPage({ params }) {
           {/* Left Column: Package Details */}
           <div className="lg:col-span-2 space-y-8">
             {/* Price Card */}
-            <div className="bg-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm">
-              <div className="flex items-center justify-between">
+            <div className="bg-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <div className="text-sm text-gray-500">Package Price</div>
                   <div className="text-4xl font-bold text-[#0077B6] mt-2">
-                    ৳{healthcheck.price}
+                    ৳{healthcheck.price || "N/A"}
                   </div>
                   <div className="text-sm text-gray-600 mt-2">
                     Inclusive of all tests and professional fees
@@ -111,30 +139,36 @@ export default async function HealthcheckDetailsPage({ params }) {
             </div>
 
             {/* Included Tests */}
-            <div className="bg-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm">
+            <div className="bg-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm hover:shadow-md transition-shadow duration-300">
               <h2 className="text-2xl font-bold text-[#023E8A] mb-6">
-                Included Tests
+                Included Tests ({healthcheck.tests?.length || 0})
               </h2>
-              <div className="space-y-4">
-                {healthcheck.tests.map((test, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl hover:bg-blue-50/50 transition-colors duration-300"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0 mt-0.5">
-                      <CheckCircle size={14} />
+              {healthcheck.tests?.length > 0 ? (
+                <div className="space-y-4">
+                  {healthcheck.tests.map((test, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl hover:bg-blue-50/50 transition-colors duration-300"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0 mt-0.5">
+                        <CheckCircle size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">{test}</div>
+                      </div>
+                      <div className="text-sm text-gray-500">Test #{index + 1}</div>
                     </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">{test}</div>
-                    </div>
-                    <div className="text-sm text-gray-500">Test #{index + 1}</div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  No tests information available
+                </div>
+              )}
             </div>
 
             {/* Package Information */}
-            <div className="bg-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm">
+            <div className="bg-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm hover:shadow-md transition-shadow duration-300">
               <h2 className="text-2xl font-bold text-[#023E8A] mb-6">
                 Package Information
               </h2>
@@ -142,18 +176,20 @@ export default async function HealthcheckDetailsPage({ params }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <div className="text-sm text-gray-500 mb-1">Package ID</div>
-                    <div className="font-mono text-gray-800">{healthcheck._id?.slice(-8)}</div>
+                    <div className="font-mono text-gray-800">
+                      {healthcheck._id?.slice(-8) || "N/A"}
+                    </div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500 mb-1">Total Tests</div>
                     <div className="text-lg font-semibold text-[#0077B6]">
-                      {healthcheck.tests.length} diagnostic tests
+                      {healthcheck.tests?.length || 0} diagnostic tests
                     </div>
                   </div>
                 </div>
                 <div className="pt-4 border-t border-gray-200">
                   <div className="text-sm text-gray-500 mb-2">Full Description</div>
-                  <p className="text-gray-700 leading-relaxed">{healthcheck.description}</p>
+                  <p className="text-gray-700 leading-relaxed">{healthcheck.description || "No description available"}</p>
                 </div>
               </div>
             </div>
@@ -162,7 +198,7 @@ export default async function HealthcheckDetailsPage({ params }) {
           {/* Right Column: Contact & Actions */}
           <div className="space-y-6">
             {/* Contact Card */}
-            <div className="bg-linear-to-br from-[#F8FCFF] to-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm">
+            <div className="bg-linear-to-br from-[#F8FCFF] to-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm hover:shadow-md transition-shadow duration-300">
               <h3 className="text-xl font-bold text-[#023E8A] mb-4">
                 Book This Package
               </h3>
@@ -185,7 +221,6 @@ export default async function HealthcheckDetailsPage({ params }) {
                 </div>
 
                 <div className="space-y-3">
-                  
                   <Link
                     href="/health-checks"
                     className="block w-full text-center py-3 border border-[#0077B6] text-[#0077B6] font-semibold rounded-xl hover:bg-blue-50 transition-all duration-300"
@@ -197,7 +232,7 @@ export default async function HealthcheckDetailsPage({ params }) {
             </div>
 
             {/* Benefits */}
-            <div className="bg-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm">
+            <div className="bg-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm hover:shadow-md transition-shadow duration-300">
               <h3 className="text-lg font-semibold text-[#023E8A] mb-4">
                 Package Benefits
               </h3>
@@ -236,7 +271,7 @@ export default async function HealthcheckDetailsPage({ params }) {
             </div>
 
             {/* Assistance Section */}
-            <div className="bg-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm">
+            <div className="bg-white rounded-2xl p-6 border border-[#E1F0FF] shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="text-center">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Phone className="w-6 h-6 text-blue-600" />

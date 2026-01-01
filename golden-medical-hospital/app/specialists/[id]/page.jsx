@@ -1,54 +1,79 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Phone, Mail, User, Award, Clock, Calendar } from "lucide-react";
+import { Phone, Mail, User, Award, Clock, Calendar, Loader2, ArrowLeft } from "lucide-react";
 import Image from "next/image";
 
-async function getSpecialist(id) {
-  try {
-    const res = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
-      }/api/specialists/${id}`,
-      {
-        cache: "no-store",
-      }
-    );
+export default function SpecialistPage({ params }) {
+  const [specialist, setSpecialist] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    if (!res.ok) {
-      if (res.status === 404) {
-        return null;
+  useEffect(() => {
+    async function getSpecialist(id) {
+      try {
+        const res = await fetch(`/api/specialists/${id}`, {
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          if (res.status === 404) {
+            throw new Error("Specialist not found");
+          }
+          throw new Error("Failed to fetch specialist");
+        }
+
+        const data = await res.json();
+        setSpecialist(data);
+      } catch (error) {
+        console.error("Error fetching specialist:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
-      throw new Error("Failed to fetch specialist");
     }
 
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching specialist:", error);
-    return null;
-  }
-}
+    async function fetchData() {
+      if (params && typeof params.then === "function") {
+        const resolvedParams = await params;
+        getSpecialist(resolvedParams.id);
+      } else {
+        getSpecialist(params.id);
+      }
+    }
 
-export default async function SpecialistPage({ params }) {
-  if (params && typeof params.then === "function") {
-    params = await params;
-  }
+    fetchData();
+  }, [params]);
 
-  const specialist = await getSpecialist(params.id);
-
-  if (!specialist) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-linear-to-b from-[#F0F9FF] to-[#E6F4FF] flex items-center justify-center">
         <div className="text-center">
+          <Loader2 className="w-16 h-16 text-[#0077B6] animate-spin mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-[#023E8A] mb-2">Loading Specialist...</h1>
+          <p className="text-gray-600">Please wait while we fetch the details</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !specialist) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-[#F0F9FF] to-[#E6F4FF] flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-[#023E8A] mb-4">
             Specialist Not Found
           </h1>
           <p className="text-gray-600 mb-6">
-            The specialist you are looking for does not exist.
+            {error || "The specialist you are looking for does not exist."}
           </p>
           <Link
             href="/"
-            className="px-6 py-3 bg-linear-to-r from-[#0077B6] to-[#0096C7] text-white rounded-xl font-medium hover:shadow-lg hover:shadow-[#0077B6]/30 transition-all duration-300"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-[#0077B6] to-[#0096C7] text-white rounded-xl font-medium hover:shadow-lg hover:shadow-[#0077B6]/30 transition-all duration-300"
           >
+            <ArrowLeft size={20} />
             Back to Home
           </Link>
         </div>
@@ -56,6 +81,7 @@ export default async function SpecialistPage({ params }) {
     );
   }
 
+  // Success: Render the specialist page
   return (
     <div className="min-h-screen bg-linear-to-b from-[#F0F9FF] to-[#E6F4FF]">
       {/* Hero Section */}

@@ -1,32 +1,68 @@
-import React from "react";
+"use client"
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Package, Stethoscope } from "lucide-react";
 
-async function getHealthchecks() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/health-check`, {
-      cache: "no-store",
-    });
+export default function HealthCheckPackages() {
+  const [healthchecks, setHealthchecks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    if (!res.ok) {
-      console.error("Failed to fetch healthcheck packages");
-      return [];
+  useEffect(() => {
+    async function fetchHealthchecks() {
+      try {
+        const res = await fetch(`/api/health-check`, {
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          console.error("Failed to fetch healthcheck packages");
+          return [];
+        }
+
+        const data = await res.json();
+        setHealthchecks(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error fetching healthcheck packages:", error);
+        setHealthchecks([]);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error("Error fetching healthcheck packages:", error);
-    return [];
-  }
-}
+    fetchHealthchecks();
+  }, []);
 
-const HealthCheckPackages = async () => {
-  const healthchecks = await getHealthchecks();
-  const limitedHealthchecks = healthchecks.slice(0, 4); // Show only first 4 packages
+  const limitedHealthchecks = healthchecks.slice(0, 4);
+
+  if (loading) {
+    return (
+      <section className="bg-linear-to-b from-[#CAF0F8] to-[#ADE8F4] py-16 px-6 md:px-20 font-merriweather text-[#03045E]">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-3xl md:text-5xl font-bold text-[#023E8A] mb-4">
+            Health Check Packages
+          </h2>
+          <div className="w-24 h-1 bg-[#0077B6] mx-auto mb-10 rounded-full"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="flex flex-col h-full bg-white rounded-2xl border border-[#E1F0FF] shadow-md p-6 animate-pulse"
+              >
+                <div className="h-6 bg-gray-300 rounded mb-4"></div>
+                <div className="h-4 bg-gray-300 rounded w-1/3 mb-6"></div>
+                <div className="h-16 bg-gray-300 rounded mb-4"></div>
+                <div className="h-10 bg-gray-300 rounded"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="bg-[linear-gradient(to_bottom,#CAF0F8,#ADE8F4)] py-16 px-6 md:px-20 font-merriweather text-[#03045E]">
+    <section className="bg-linear-to-b from-[#CAF0F8] to-[#ADE8F4] py-16 px-6 md:px-20 font-merriweather text-[#03045E]">
       <div className="max-w-6xl mx-auto text-center">
         <h2 className="text-3xl md:text-5xl font-bold text-[#023E8A] mb-4">
           Health Check Packages
@@ -118,11 +154,8 @@ const HealthCheckPackages = async () => {
               </div>
             )}
           </>
-          
         )}
       </div>
     </section>
   );
-};
-
-export default HealthCheckPackages;
+}
