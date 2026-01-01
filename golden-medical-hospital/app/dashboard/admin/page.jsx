@@ -1,5 +1,5 @@
 'use client';
-import { FaUserMd, FaComments, FaEnvelopeOpenText, FaChartLine } from 'react-icons/fa';
+import { FaUserMd, FaComments, FaClinicMedical, FaEnvelopeOpenText, FaBoxOpen } from 'react-icons/fa';
 import Link from 'next/link';
 
 const features = [
@@ -15,22 +15,30 @@ const features = [
     title: 'Patient Queries',
     desc: 'Check and respond to queries submitted by patients.',
     icon: <FaEnvelopeOpenText size={40} />,
-    href: '#',
+    href: '/dashboard/admin/patient-queries',
   },
   {
     id: 3,
     title: 'Feedback & Reviews',
     desc: 'Monitor feedback and ratings shared by patients.',
     icon: <FaComments size={40} />,
-    href: '#',
+    href: '/dashboard/admin/feedback',
   },
   {
     id: 4,
-    title: 'Doctor Activity Overview',
-    desc: 'Track doctor performance, appointment rates, and field activity.',
-    icon: <FaChartLine size={40} />,
-    href: '#',
+    title: 'Specialist Management',
+    desc: 'Manage and oversee specialist departments.',
+    icon: <FaClinicMedical size={40} />,
+    href: '/dashboard/admin/specialists',
   },
+  {
+  id: 5, 
+  title: 'Healthcheck Packages',
+  desc: 'Manage health screening and checkup packages.',
+  icon: <FaBoxOpen size={40} />, 
+  href: '/dashboard/admin/health-checks',
+  },
+  
 ];
 
 const AdminDashboard = () => {

@@ -26,10 +26,10 @@ const Hero = () => {
 
   const buttons = [
     { id: 1, label: "Find a Doctor", link: "/find-doctor" },
-    { id: 2, label: "Request an Appointment", link: "#" },
-    { id: 3, label: "Online Report", link: "#" },
-    { id: 4, label: "Helpline", link: "#" },
-    { id: 5, label: "Patients and Visitors Guide", link: "#" },
+    { id: 2, label: "Request an Appointment", link: "/find-doctor" },
+    { id: 3, label: "Online Report", link: "/online-report" },
+    { id: 4, label: "Helpline", link: "/helpline" },
+    { id: 5, label: "Patients and Visitors Guide", link: "/patients-visitors-guide" },
   ];
 
   return (

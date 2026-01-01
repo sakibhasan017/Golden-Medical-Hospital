@@ -1,5 +1,5 @@
 'use client';
-import { FaUserEdit, FaHistory, FaFileMedical, FaStethoscope, FaNotesMedical, FaCalendarCheck } from 'react-icons/fa';
+import { FaUserEdit, FaHistory, FaFileMedical, FaStethoscope, FaNotesMedical, FaCalendarCheck, FaComments } from 'react-icons/fa';
 import Link from 'next/link';
 
 const features = [
@@ -19,24 +19,24 @@ const features = [
   },
   {
     id: 3,
-    title: 'View Prescription',
+    title: 'View Prescriptions',
     desc: 'Check and download your prescribed medications.',
     icon: <FaFileMedical size={40} />,
-    href: '/prescriptions',
+    href: '/dashboard/patient/prescriptions',
   },
   {
     id: 4,
     title: 'Online Report',
     desc: 'Access your lab and diagnostic test results anytime.',
     icon: <FaNotesMedical size={40} />,
-    href: '#',
+    href: '/online-report',
   },
   {
     id: 5,
     title: 'Previous History',
     desc: 'View your previous treatments and hospital visits.',
     icon: <FaHistory size={40} />,
-    href: '#',
+    href: '/dashboard/patient/history',
   },
   {
     id: 6,
@@ -44,6 +44,13 @@ const features = [
     desc: 'Update your personal information and contact details.',
     icon: <FaUserEdit size={40} />,
     href: '/dashboard/patient/edit-profile',
+  },
+  {
+    id: 7,
+    title: 'Feedback & Reviews',
+    desc: 'Share your experience here.',
+    icon: <FaComments size={40} />,
+    href: '/dashboard/patient/feedback',
   },
 ];
 
