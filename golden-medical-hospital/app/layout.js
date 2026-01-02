@@ -3,8 +3,10 @@ import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/Footer/Footer";
 import SessionWrapper from "./session-wrapper"; 
 
+
+
 export const metadata = {
-  title: "Create Next App",
+  title: "Golden Medical Hospital",
   description: "Ocean Blue Serenity Theme",
 };
 
