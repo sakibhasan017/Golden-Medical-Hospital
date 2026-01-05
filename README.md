@@ -1,5 +1,8 @@
 # Golden Medical Hospital
 
+## 🌐 Live Demo
+🔗 https://golden-medical-hospital-y3lg.vercel.app/
+
 ## Team Name: Top-G
 
 ICT 8, Department of Information and Communication Engineering, Bangladesh University of Professionals, Bangladesh
@@ -32,35 +35,36 @@ ICT 8, Department of Information and Communication Engineering, Bangladesh Unive
 
 ```bash
 # Install frontend dependencies
-cd frontend
+cd golden-medical-hospital
 npm install
 
-# Install backend dependencies
-cd ../backend
-npm install
 ```
 
 4\. Setup environment:
 --------------------
 
-- Create a `.env` file in both `frontend` and `backend` directories.
+- Create a `.env` file in golden-medical-hospital
 - Configure:
-     - MongoDB connection string :
-     - JWT secret key : 
+     - MONGODB_URI :             # MongoDB database connection string
+     - GOOGLE_CLIENT_ID :        # Google OAuth Client ID
+     - GOOGLE_CLIENT_SECRET :    # Google OAuth Client Secret
+     - NEXTAUTH_SECRET :         # Secret key for NextAuth authentication
+     - ADMIN_EMAIL :             # Default admin email (Contact With Developer)
+     - ADMIN_PASSWORD :          # Default admin password (Contact With Developer)
+     - SMTP_USER :               # SMTP username (email)
+     - SMTP_HOST :               # SMTP server host
+     - STMP_PORT :               # SMTP server port
+     - SMTP_PASS :               # SMTP password
+     - EMAIL_FROM :              # Sender email address
 
 ## 5\. Run the Project:
 --------------------
 
 ```bash
-# Start backend
-cd backend
-npm run dev
-
-# Start frontend
-cd ../frontend
+cd ../golden-medical-hospital
 npm run dev
 ```
-- Visit: <a href="http://localhost:5173">http://localhost:5173</a>
+- Visit: <a href="http://localhost:3000">http://localhost:3000</a>
 
 # How to Develop
 
